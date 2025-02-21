@@ -1,0 +1,13 @@
+remote: Resolving deltas: 100% (92/92), done.
+remote: error: Trace: b99ae4e9f4c594616a490be91a25c9d82ff794dec588f294fee30e7e26700fdc
+remote: error: See https://gh.io/lfs for more information.
+remote: error: File suzuki16/output/MB12288.npy is 146.38 MB; this exceeds GitHub's file size limit of 100.00 MB
+remote: error: File suzuki16/output/MB12505.npy is 357.51 MB; this exceeds GitHub's file size limit of 100.00 MB
+remote: error: File suzuki16/output_norm/MB12288.npy is 146.38 MB; this exceeds GitHub's file size limit of 100.00 MB
+remote: error: File suzuki16/output_norm/MB12505.npy is 357.51 MB; this exceeds GitHub's file size limit of 100.00 MB
+remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
+To https://github.com/NunotaKansuke/AnomalyFinder.git
+ ! [remote rejected] main -> main (pre-receive hook declined)
+error: failed to push some refs to 'https://github.com/NunotaKansuke/AnomalyFinder.git'
+
+というエラーが出ちゃった

@@ -1,0 +1,10 @@
+/moaphot/
+*.npy
+/finder_results/
+/html/
+/lcurve/
+/image/
+/suzuki16/
+/.ipynb_checkpoints/
+slide.pptx
+label_nunota.xlsx
