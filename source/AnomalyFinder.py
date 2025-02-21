@@ -82,26 +82,36 @@ class AnomalyFinder():
         gs = gridspec.GridSpec(2, 1, height_ratios=[8, 3])
         ax0 = plt.subplot(gs[0])
         ax1 = plt.subplot(gs[1])
-        ax0.set_title(label=f"t0= {round(self.t0_PSPL,2)}     tE= {round(self.tE_PSPL,2)}     u0= {round(self.u0_PSPL,2)}     chi2init= {int(self.chi2_init)}")
+        ax0.set_title(label=f"t0= {round(self.t0_PSPL,2)}     tE= {round(self.tE_PSPL,2)}     u0= {round(self.u0_PSPL,5)}     chi2init= {int(self.chi2_init)}")
 
         ax0.plot(self.lc_PSPL["time"],self.lc_PSPL["flux"],c="orange")
-        ax0.errorbar(self.data["time"][ind],self.data["flux"][ind],yerr=self.data["ferr"][ind],fmt="o",**kwargs)
+        ax0.errorbar(self.data["time"],self.data["flux"],yerr=self.data["ferr"],fmt="o",**kwargs)
         ax0.set_ylabel("Flux")
         ax0.minorticks_on()
         ax0.set_xlim(t_range[0],t_range[1])
-        if ax0_ylims:
-            ax0.set_ylim(ax0_ylims[0], ax0_ylims[1])
-        else:
-            ax0.set_ylim(np.percentile(self.data["flux"][ind], 5),1.2*np.max(self.lc_PSPL["flux"]))
 
-        ax1.errorbar(self.data["time"][ind],self.f_residual[ind],yerr=self.data["ferr"][ind],fmt="o",**kwargs)
+        ax1.errorbar(self.data["time"],self.f_residual,yerr=self.data["ferr"],fmt="o",**kwargs)
         ax1.plot([np.min(self.data["time"]), np.max(self.data["time"])], [0, 0], color='orange', linestyle='-')
         ax1.set_ylabel("Residual")
         ax1.set_xlabel("Time")
         ax1.minorticks_on()
         ax1.set_xlim(t_range[0],t_range[1])
-        ylim=np.abs(np.min([np.percentile(self.data["flux"][ind], 1),np.percentile(self.data["flux"][ind], 99)]))
-        ax1.set_ylim(-ylim,ylim)
+
+        f_residual_t_range = self.f_residual[ind]
+        ymax_abs = np.max(np.abs(f_residual_t_range))
+        margin = ymax_abs * 0.1
+        ax1.set_ylim(- (ymax_abs + margin), ymax_abs + margin)
+
+        if ax0_ylims:
+            ax0.set_ylim(ax0_ylims[0], ax0_ylims[1])
+        else:
+            y_max = np.max(self.lc_PSPL["flux"])
+            y_margin = 0.2
+            y_max +=  y_margin * y_max
+            med = (np.max(self.lc_PSPL["flux"]) + 1) / 2
+            y_min = -(y_max - med)
+            ax0.set_ylim(y_min,y_max)
+
         if save:
             plt.savefig(save)
 
@@ -164,7 +174,7 @@ class AnomalyFinder():
         cand_ind = np.where(self.chi2_array["nout_flat"] >= nout)[0]
         notcand_ind = np.where(self.chi2_array["nout_flat"] < nout)[0]
         rcParams["font.size"] = 12
-        fig, ax = plt.subplots(2, 1, figsize=(10, 8))
+        fig, ax = plt.subplots(2, 1, figsize=(6, 6))
         plt.subplots_adjust(left=0.082, right=0.88, top=0.95, bottom=0.08)
 
         sort_ind_flat = np.argsort(self.chi2_array["chi2_flat"])
@@ -172,8 +182,8 @@ class AnomalyFinder():
         ax[0].scatter(self.chi2_array["t0"][notcand_ind], self.chi2_array["chi2_flat"][notcand_ind], c="C0", **kwargs)
         ax[0].scatter(self.chi2_array["t0"][cand_ind], self.chi2_array["chi2_flat"][cand_ind], c="C1", **kwargs)
 
-        ax[0].scatter(self.t0_PSPL, -10, s=80, marker="*", c="red")
-        ax[1].scatter(self.t0_PSPL, -10, s=80, marker="*", c="red")
+        ymin, ymax = ax[0].get_ylim()
+        ax[0].scatter(self.t0_PSPL, ymax, s=200, marker="*", c="red",zorder=10)
 
         im1 = ax[1].scatter(self.chi2_array["t0"][sort_ind_flat], self.chi2_array["teff"][sort_ind_flat],
                             c=self.chi2_array["chi2_flat"][sort_ind_flat], s=10, cmap="jet", marker='o')
@@ -183,18 +193,14 @@ class AnomalyFinder():
         ax[0].minorticks_on()
         ax[1].minorticks_on()
 
-        ax[0].set_ylabel(r"$\Delta\chi^{2}_{flat}$")
-        ax[1].set_xlabel(r"$\rm t_{\rm 0}$")
-        ax[0].set_ylabel(r"$\rm t_{\rm eff}$")
-        ax[1].set_ylabel(r"$\rm t_{\rm eff}$")
+        ax[0].set_ylabel(r"$\Delta\chi^{2}_{flat}$",fontsize=15)
+        ax[1].set_xlabel(r"$\rm t_{\rm 0}$",fontsize=15)
+        ax[1].set_ylabel(r"$\rm t_{\rm eff}$",fontsize=15)
 
 
-        cbar_ax = fig.add_axes([0.89, 0.08, 0.015, 0.395])
+        cbar_ax = fig.add_axes([0.89, 0.08, 0.03, 0.395])
         cb = fig.colorbar(im1, cax=cbar_ax)
-        cb.set_label(r'$\Delta\chi^{2}_{flat}$')
         cbar_ax.minorticks_on()
-
-        rcParams["font.size"] = 10
 
         if save:
             plt.savefig(save)
