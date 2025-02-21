@@ -65,10 +65,7 @@ def auto_single_fit(data,nout):
 
     t0_list, tE_list, u0_list, chi2_list = [],[],[],[]
     for tE_init, u0_init in zip(tE_inits, u0_inits):
-        try:
-            t0, tE, u0 = single_fit(t0_init, tE_init, u0_init,data["time"],data["flux"],data["ferr"])
-        except:
-            continue
+        t0, tE, u0 = single_fit(t0_init, tE_init, u0_init,data["time"],data["flux"],data["ferr"])
         chi2 = get_chi2_single(t0,tE,u0,data["time"],data["flux"],data["ferr"])
         t0_list.append(t0)
         tE_list.append(tE)
