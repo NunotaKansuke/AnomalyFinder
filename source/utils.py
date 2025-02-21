@@ -3,7 +3,6 @@ import numpy as np
 import scipy.optimize as op
 import warnings
 warnings.filterwarnings("ignore", category=np.RankWarning)
-from numba import jit
 
 #--------------------------------single lens ---------------------------------------#
 
@@ -14,7 +13,7 @@ def single_magnification(t0,tE,u0,t):
 
 def get_flux_single(t0,tE,u0,data_time,data_flux,data_ferr):
     A = single_magnification(t0,tE,u0,data_time)
-    fs, fb = linear_fit(A, data_flux,(1/data_ferr)**2)
+    fs, fb, chi2 = linear_fit(A, data_flux,(1/data_ferr)**2)
     return fs, fb
     
 def get_chi2_single(t0,tE,u0,data_time,data_flux,data_ferr):
@@ -46,16 +45,18 @@ def get_lc_PSPL(t0,tE,u0,fs,fb,t_range):
     lc_model["flux"] = f_model
     return lc_model
 
-def linear_fit(x,y,w):
+def linear_fit(x, y, w):
     w_sum = np.sum(w)
-    wxy_sum = np.sum(w*x*y)
-    wx_sum = np.sum(w*x)
-    wy_sum = np.sum(w*y)
-    wxx_sum = np.sum(w*x*x)
-    bunbo = w_sum*wxx_sum-wx_sum**2
-    a = (w_sum*wxy_sum-wx_sum*wy_sum)/bunbo
-    b = (wxx_sum*wy_sum-wx_sum*wxy_sum)/bunbo
-    return a,b
+    wxy_sum = np.sum(w * x * y)
+    wx_sum = np.sum(w * x)
+    wy_sum = np.sum(w * y)
+    wxx_sum = np.sum(w * x * x)
+    bunbo = w_sum * wxx_sum - wx_sum**2
+    a = (w_sum * wxy_sum - wx_sum * wy_sum) / bunbo
+    b = (wxx_sum * wy_sum - wx_sum * wxy_sum) / bunbo
+    residuals = y - (a * x + b)
+    chi2 = np.sum((residuals**2) / w)
+    return a, b, chi2
 
 #------------------------------------------------------------------------------------#
 
@@ -86,7 +87,7 @@ def get_chi2_comb(t0,teff,data_time,data_flux,data_ferr):
 
 def get_flux_comb(t0,teff,data_time,data_flux,data_ferr):
     A_comb = calc_A_comb(t0,teff,data_time)
-    f1, f0 = linear_fit(A_comb, data_flux,(1/data_ferr)**2)
+    f1, f0, chi2 = linear_fit(A_comb, data_flux,(1/data_ferr)**2)
     return f1,f0
 
 def chi2_fun_comb(theta,data_time,data_flux,data_ferr):
